@@ -1,0 +1,93 @@
+PARAMETROS DEL MODELO — PREDICTIVO UF UNICEF ARGENTINA
+=======================================================
+
+OBJETIVO
+--------
+Predecir la probabilidad de que un donante activo entre en proceso de
+Unfullfilment (baja) en los proximos ~3 meses.
+
+
+MODELO
+------
+Tipo:             Regresion Logistica (sklearn.linear_model.LogisticRegression)
+Regularizacion:   L2, C=0.5
+Solver:           lbfgs, max_iter=2000
+class_weight:     Sin balanceo (para probabilidades calibradas a la tasa real)
+Preprocesamiento: StandardScaler en pipeline
+
+
+DATOS DE ENTRENAMIENTO
+----------------------
+Fuente:           Donantes de DIC-2025 y ENE-2026 (meses con estados UF ya definidos)
+Tamano:           ~1791 registros, ~8% UF=SI
+Variable target:  Columna UNFULLFILMENT = SI
+Poblacion scored: Donantes con UNFULLFILMENT = NO (activos)
+
+
+FEATURES — 22 variables, todas del donante (sin datos del facer)
+----------------------------------------------------------------
+Feature          | Descripcion                                      | Tipo
+-----------------|--------------------------------------------------|--------
+log_monto        | log(1 + monto_donacion)                          | Numerico
+email            | Tiene email registrado                           | Binario
+celular          | Tiene celular registrado                         | Binario
+domicilio        | Tiene domicilio registrado                       | Binario
+tel_fijo         | Tiene telefono fijo/laboral/alternativo          | Binario
+edad_25_34       | Rango etario "25 a 34"                           | Binario
+edad_menos25     | Rango etario "< 25"                              | Binario
+edad_35_44       | Rango etario "35 a 44"                           | Binario
+edad_45_54       | Rango etario "45 a 54"                           | Binario
+edad_55_64       | Rango etario "55 a 64"                           | Binario
+edad_65_74       | Rango etario "65 a 74"                           | Binario
+tc_debito        | Tipo de tarjeta = Debito                         | Binario
+tc_credito       | Tipo de tarjeta = Credito                        | Binario
+marca_mc         | Marca Mastercard                                 | Binario
+marca_visa       | Marca VISA                                       | Binario
+marca_naranja    | Marca Tarjeta Naranja                            | Binario
+marca_cabal      | Marca Cabal                                      | Binario
+marca_amex       | Marca Amex                                       | Binario
+aac_acepta       | Campo AAC contiene "Acepta"                      | Binario
+gen_masc         | Genero del donante = Masculino                   | Binario
+quincena_1ra     | Campo QUINCENA contiene "1ra"                    | Binario
+cuarenta         | Campo "40 ANOS" = SI                             | Binario
+
+
+UMBRALES DE SEMAFORIZACION
+---------------------------
+ALTO   (rojo)      probabilidad >= 15%
+MEDIO  (amarillo)  probabilidad entre 8% y 15%
+BAJO   (verde)     probabilidad <  8%
+
+
+CHIPS DE FACTORES DE RIESGO (etiquetas descriptivas por donante)
+----------------------------------------------------------------
+Se calculan independientemente del modelo, como etiquetas explicativas:
+  - Tarjeta debito
+  - Marca Mastercard / Amex / Cabal
+  - Edad 25-34
+  - Edad < 25
+  - Sin email  (campo != SI)
+  - Sin celular (campo != SI)
+
+
+PERFORMANCE DEL MODELO
+-----------------------
+AUC Validacion Cruzada (5-fold):  ~0.71
+AUC entrenamiento:                ~0.75
+Tasa UF base (global):            ~2.9%
+Tasa UF en meses entrenamiento:   ~8.0%
+
+
+EXCLUSION DELIBERADA
+--------------------
+Tasa historica de UF del facer: EXCLUIDA del modelo.
+Razon: el objetivo es intervenir y corregir a los facers, por lo que no
+corresponde penalizar al donante por el historial de quien lo capto.
+La tasa por facer se sigue calculando y mostrando en la vista de ranking
+de facers, pero no influye en el score individual del donante.
+
+
+PROYECCION DE BAJAS
+--------------------
+Metodo: suma de las probabilidades individuales de todos los donantes activos.
+Interpretacion: cantidad esperada de donantes que entraran en UF en ~3 meses.

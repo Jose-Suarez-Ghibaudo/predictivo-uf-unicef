@@ -649,36 +649,6 @@ def bento_grid(total, n_alto, n_medio, n_bajo, proj, risk_top, safe_top):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# LOGIN
-# ─────────────────────────────────────────────────────────────────────────────
-def check_password() -> bool:
-    if st.session_state.get("authenticated"):
-        return True
-
-    st.markdown(DESIGN, unsafe_allow_html=True)
-    _, col, _ = st.columns([1, 1, 1])
-    with col:
-        st.markdown("""
-        <div style="text-align:center;padding:60px 0 32px">
-          <div style="font-size:42px;margin-bottom:12px">◈</div>
-          <div style="font-size:22px;font-weight:800;color:#EEF2FF;letter-spacing:-.02em">
-            Predictivo UF</div>
-          <div style="font-size:13px;color:#5E6A8A;margin-top:6px">
-            UNICEF Argentina · PROA Consulting</div>
-        </div>""", unsafe_allow_html=True)
-
-        pwd = st.text_input("", placeholder="Contraseña de acceso",
-                            type="password", label_visibility="collapsed")
-        if st.button("Ingresar", use_container_width=True):
-            if pwd == st.secrets.get("APP_PASSWORD", ""):
-                st.session_state["authenticated"] = True
-                st.rerun()
-            else:
-                st.error("Contraseña incorrecta")
-    return False
-
-
-# ─────────────────────────────────────────────────────────────────────────────
 # MAIN
 # ─────────────────────────────────────────────────────────────────────────────
 def main():
@@ -1336,5 +1306,4 @@ La tasa histórica del facer fue **excluida deliberadamente** para evaluar al do
 
 
 if __name__ == "__main__":
-    if check_password():
-        main()
+    main()
